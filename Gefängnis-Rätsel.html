@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<title>Chatbot</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+:root{
+  --bg1: url("Gefängnisinsasse.png") no-repeat center center fixed;
+  --bot-bubble: #f1f0f0;
+  --user-bubble: #4e9af1;
+}
+
+html,body{
+  height:100%;
+  margin:0;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  background: var(--bg1);
+  background-size: cover;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  box-sizing:border-box;
+}
+
+#chat{
+  width:520px;
+  height:700px;
+  max-width:98vw;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(6px);
+  border-radius:18px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  position:relative;
+  z-index:1;
+}
+
+#messages{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+.message{display:flex;align-items:flex-end;max-width:75%;}
+.message.user{align-self:flex-end;flex-direction:row-reverse;}
+.message.bot{align-self:flex-start;}
+.message img{width:44px;height:44px;border-radius:50%;margin:0 10px;flex-shrink:0;object-fit:cover;}
+.bubble{padding:12px 16px;border-radius:16px;font-size:15px;line-height:1.4;box-shadow:0 2px 6px rgba(0,0,0,0.08);word-wrap:break-word;}
+.bot .bubble{background:var(--bot-bubble);color:#111;border-bottom-left-radius:6px;}
+.user .bubble{background:var(--user-bubble);color:#fff;border-bottom-right-radius:6px;}
+#inputArea{display:flex;padding:14px;background:rgba(250,250,250,0.7);border-top:1px solid #eee;}
+#userInput{flex:1;padding:12px;border-radius:24px;border:1px solid #ccc;font-size:15px;outline:none;}
+button#send{margin-left:12px;padding:12px 18px;border-radius:20px;border:none;background:#4e9af1;color:#fff;cursor:pointer;font-weight:600;}
+button#send:active{transform:translateY(1px);}
+
+/* Overlay */
+#overlay{
+  position:fixed;
+  inset:0;
+  display:none;
+  opacity:0;
+  z-index:9999;
+  transition: opacity 400ms ease;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+  <div id="chat" role="application" aria-label="Chatbot">
+    <div id="messages" aria-live="polite"></div>
+    <div id="inputArea">
+      <input id="userInput" type="text" placeholder="Schreib etwas..." aria-label="Nachricht eingeben" />
+      <button id="send">Senden</button>
+    </div>
+  </div>
+
+  <div id="overlay" aria-hidden="true"></div>
+
+<script>
+const botAvatar="bot.png";
+const userAvatar="user.png";
+const expectedPhrase="Natürlich, mein Schatz";
+const lockPage="Zahlenschloss.html";
+
+const messages=document.getElementById('messages');
+const input=document.getElementById('userInput');
+const sendBtn=document.getElementById('send');
+const overlay=document.getElementById('overlay');
+
+let lockWindow = null;
+
+/* Nachricht einfügen */
+function addMessage(text,sender='bot'){
+  const msgWrap=document.createElement('div');
+  msgWrap.className='message '+sender;
+  const img=document.createElement('img');
+  img.src=(sender==='bot')?botAvatar:userAvatar;
+  img.alt = sender==='bot' ? 'Bot' : 'Du';
+  const bubble=document.createElement('div');
+  bubble.className='bubble';
+  bubble.textContent=text;
+  if(sender==='bot'){msgWrap.appendChild(img);msgWrap.appendChild(bubble);}
+  else{msgWrap.appendChild(bubble);msgWrap.appendChild(img);}
+  messages.appendChild(msgWrap);
+  messages.scrollTop=messages.scrollHeight;
+}
+
+/* Bot tippt */
+function botType(text, delay=3000){
+  return new Promise(resolve=>{
+    const typing=document.createElement('div');
+    typing.className='message bot';
+    typing.innerHTML=`<img src="${botAvatar}" alt="Bot"><div class="bubble"><em>… tippt</em></div>`;
+    messages.appendChild(typing);
+    messages.scrollTop=messages.scrollHeight;
+    setTimeout(()=>{
+      typing.remove();
+      addMessage(text,'bot');
+      resolve();
+    }, delay);
+  });
+}
+
+/* Overlay zeigen */
+function showOverlay(img,duration=3000){
+  overlay.style.background=`url("${img}") no-repeat center center fixed`;
+  overlay.style.backgroundSize="cover";
+  overlay.style.display='block';
+  requestAnimationFrame(()=>{overlay.style.opacity='1';});
+  setTimeout(()=>{
+    overlay.style.opacity='0';
+    setTimeout(()=>{overlay.style.display='none';},400);
+  },duration);
+}
+
+/* Eingabe */
+function sendMessage(){
+  const txt=input.value.trim();
+  if(!txt) return;
+  addMessage(txt,'user');
+  input.value='';
+
+  if(txt===expectedPhrase){
+    // Popup direkt beim Klick öffnen, zählt als User-Aktion
+    lockWindow = window.open(lockPage,'_blank','width=500,height=700');
+
+    botType("Ich konnte einen Gefängniswärter schmieren. Er hat mir den Geheimcode über eine verschlüsselte Nachricht mitgeteilt. In der Nachricht steht geschrieben 'Die Fantas zählten die Beine eines Insekts. Sie wurden von bekannten Zwergen aus der neun Welt beobachtet - was eine Dreistigkeit.")
+    .then(()=> botType("Ich verstehe kein einziges Wort. Wirst du daraus schlau? Versuche bitte das Schloss zu öffnen. Es bleibt nicht viel Zeit!"))
+    .then(()=>{
+      // Poll bis das Schloss-Fenster geschlossen wird
+      const poll=setInterval(()=>{
+        if(lockWindow && lockWindow.closed){
+          clearInterval(poll);
+          botType("Du bist genial! Ich liebe dich! Schnell, lass uns sofort aus diesem Drecksloch fliehen.")
+          .then(()=> showOverlay("Gefängnisinsasse_froh.png",3000));
+        }
+      },500);
+    });
+  } else {
+    showOverlay("Gefängnisinsasse_mit_Gesicht.png",3000);
+    setTimeout(()=> {
+      botType(`Du möchtest mir nicht helfen? Überleg dir das gut. Ich habe noch viele Kontakt außerhalb dieser Mauern, die dir das Leben schwer machen werden. Antworte mir mit "Natürlich, mein Schatz" und ich vergesse dein Zögern.`);
+    },3200);
+  }
+}
+
+/* Events */
+sendBtn.addEventListener('click',sendMessage);
+input.addEventListener('keydown',e=>{if(e.key==='Enter')sendMessage();});
+
+/* Startnachricht */
+window.addEventListener('load',()=>{
+  botType("Hallo Melanie! Endlich kommst du mich Mal wieder besuchen. Ich brauche dringend deine Unterstützung mein Engel. Wenn du mich unterstützen möchtest, schreibe 'Natürlich, mein Schatz'");
+});
+</script>
+</body>
+</html>

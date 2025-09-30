@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Zahlenschloss</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+html,body{
+  margin:0;
+  height:100%;
+  font-family: 'Courier New', monospace;
+  background: url("Gefängnisinsasse.png") no-repeat center center fixed;
+  background-size: cover;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+#lock-container{
+  background: radial-gradient(circle at top, #3b2f2f 0%, #1a100c 100%);
+  border: 5px solid #5c4033;
+  border-radius: 20px;
+  padding: 30px;
+  text-align:center;
+  color:#ffddb3;
+  box-shadow: 0 0 20px rgba(0,0,0,0.8);
+  width:90%;
+  max-width:350px;
+}
+#lock-container h2{
+  font-size:24px;
+  margin-bottom:20px;
+  color:#f5d6a1;
+}
+#display{
+  font-size:30px;
+  letter-spacing:10px;
+  margin-bottom:20px;
+  height:40px;
+  background: #2a1f1f;
+  color: #ffddb3;
+  line-height:40px;
+  border-radius:8px;
+  user-select:none;
+}
+button.num{
+  width:60px;
+  height:60px;
+  margin:5px;
+  font-size:24px;
+  border-radius:10px;
+  border:2px solid #5c4033;
+  background: linear-gradient(#7b5c42,#5c4033);
+  color:#ffddb3;
+  cursor:pointer;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+}
+button.num:active{
+  transform:translateY(2px);
+  box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+}
+button#clear{
+  width:130px;
+  background:#3e2a20;
+}
+button#enter{
+  width:130px;
+  background:#7b3f00;
+}
+</style>
+</head>
+<body>
+<div id="lock-container">
+  <h2>Zahlenschloss</h2>
+  <div id="display"></div>
+  <div id="buttons">
+    <div>
+      <button class="num">1</button>
+      <button class="num">2</button>
+      <button class="num">3</button>
+    </div>
+    <div>
+      <button class="num">4</button>
+      <button class="num">5</button>
+      <button class="num">6</button>
+    </div>
+    <div>
+      <button class="num">7</button>
+      <button class="num">8</button>
+      <button class="num">9</button>
+    </div>
+    <div>
+      <button id="clear">Clear</button>
+      <button class="num">0</button>
+      <button id="enter">Enter</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const correctCode = "46793";
+let current = "";
+
+const display = document.getElementById('display');
+const buttons = document.querySelectorAll('button.num');
+const clearBtn = document.getElementById('clear');
+const enterBtn = document.getElementById('enter');
+
+buttons.forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    if(current.length < 5){
+      current += btn.textContent;
+      display.textContent = "*".repeat(current.length);
+    }
+  });
+});
+
+clearBtn.addEventListener('click',()=>{
+  current = "";
+  display.textContent = "";
+});
+
+enterBtn.addEventListener('click',()=>{
+  if(current === correctCode){
+    alert("Richtig! Schloss geöffnet.");
+    window.close();
+  } else {
+    alert("Falscher Code!");
+    current="";
+    display.textContent="";
+  }
+});
+</script>
+</body>
+</html>
