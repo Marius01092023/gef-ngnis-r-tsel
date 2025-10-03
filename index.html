@@ -91,7 +91,6 @@ button#send:active{transform:translateY(1px);}
 </style>
 </head>
 <body>
-  <audio id="bgAudio" src="schluesselbund.mp3" loop></audio>
 
   <div id="chat" role="application" aria-label="Chatbot">
     <div id="messages" aria-live="polite"></div>
@@ -105,7 +104,7 @@ button#send:active{transform:translateY(1px);}
   <div id="countdown">05:00</div>
 
 <script>
-const botAvatar="bot.png";
+const botAvatar="Bot.png";
 const userAvatar="user.png";
 const expectedPhrase="Natürlich, mein Schatz";
 const lockPage="Zahlenschloss.html";
@@ -115,11 +114,11 @@ const input=document.getElementById('userInput');
 const sendBtn=document.getElementById('send');
 const overlay=document.getElementById('overlay');
 const countdownElem=document.getElementById('countdown');
-const bgAudio = document.getElementById('bgAudio');
 
 let lockWindow = null;
 let countdownStarted = false;
 let audioStarted = false;
+let bgAudio;
 let countdownTime = 300;
 let countdownInterval;
 
@@ -191,6 +190,8 @@ function sendMessage(){
 
   // Audio starten beim ersten User-Input
   if(!audioStarted){
+    bgAudio = new Audio('schluesselbund.mp3');
+    bgAudio.loop = true;
     bgAudio.play().catch(err => console.log("Audio konnte nicht abgespielt werden:", err));
     audioStarted = true;
   }
@@ -230,4 +231,3 @@ window.addEventListener('load',()=>{
 </script>
 </body>
 </html>
-
