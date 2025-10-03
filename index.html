@@ -55,13 +55,18 @@ button#send:active{transform:translateY(1px);}
 
 /* Overlay */
 #overlay{
-  position:fixed;
-  inset:0;
+  position: fixed;
+  top:0;
+  left:0;
+  width:100vw;
+  height:100vh;
   display:none;
   opacity:0;
   z-index:9999;
   transition: opacity 400ms ease;
   pointer-events: none;
+  background-size: cover;
+  background-position: center center;
 }
 
 /* Countdown */
@@ -78,7 +83,7 @@ button#send:active{transform:translateY(1px);}
   font-weight: bold;
   box-shadow: 0 6px 12px rgba(0,0,0,0.5), inset 0 -2px 5px rgba(255,255,255,0.2);
   border: 3px solid #4c3a2a;
-  z-index: 10000;
+  z-index: 10001;
   display: none;
   text-shadow: 1px 1px 2px #000;
   letter-spacing: 2px;
@@ -146,10 +151,10 @@ function botType(text, delay=3000){
 }
 
 function showOverlay(img,duration=3000){
-  overlay.style.background=`url("${img}") no-repeat center center fixed`;
+  overlay.style.background=`url("${img}") no-repeat center center`;
   overlay.style.backgroundSize="cover";
   overlay.style.display='block';
-  requestAnimationFrame(()=>{overlay.style.opacity='1';});
+  overlay.style.opacity='1';
   setTimeout(()=>{
     overlay.style.opacity='0';
     setTimeout(()=>{overlay.style.display='none';},400);
