@@ -4,10 +4,7 @@
 <meta charset="utf-8" />
 <title>Chatbot</title>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-
-<!-- Favicon -->
-<link rel="icon" type="image/png" href="favicon.png">
-
+<link rel="icon" href="favicon.png" type="image/png"><!-- NEU -->
 <style>
 :root{
   --bg1: url("Gefängnisinsasse.png") no-repeat center center fixed;
@@ -69,6 +66,7 @@ button#send:active{transform:translateY(1px);}
 </style>
 </head>
 <body>
+  <!-- Chat -->
   <div id="chat" role="application" aria-label="Chatbot">
     <div id="messages" aria-live="polite"></div>
     <div id="inputArea">
@@ -78,6 +76,9 @@ button#send:active{transform:translateY(1px);}
   </div>
 
   <div id="overlay" aria-hidden="true"></div>
+
+  <!-- Hintergrund-Sound NEU -->
+  <audio id="prisonSound" src="schluesselbund.mp3" loop></audio>
 
 <script>
 const botAvatar="bot.png";
@@ -89,6 +90,7 @@ const messages=document.getElementById('messages');
 const input=document.getElementById('userInput');
 const sendBtn=document.getElementById('send');
 const overlay=document.getElementById('overlay');
+const prisonSound=document.getElementById('prisonSound'); // NEU
 
 let lockWindow = null;
 
@@ -174,7 +176,14 @@ input.addEventListener('keydown',e=>{if(e.key==='Enter')sendMessage();});
 /* Startnachricht */
 window.addEventListener('load',()=>{
   botType("Hallo Melanie! Endlich kommst du mich Mal wieder besuchen. Ich brauche dringend deine Unterstützung mein Engel. Wenn du mich unterstützen möchtest, schreibe 'Natürlich, mein Schatz'");
+
+  // Sound starten (Autoplay muss meist über User-Interaktion freigegeben werden)
+  document.body.addEventListener('click', ()=> {
+    prisonSound.volume=0.5; // Lautstärke anpassen
+    prisonSound.play();
+  }, { once:true }); // nur beim ersten Klick
 });
 </script>
 </body>
 </html>
+
