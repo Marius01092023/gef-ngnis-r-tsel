@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <title>Chatbot</title>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<link rel="icon" href="favicon.png" type="image/png"><!-- NEU -->
+<link rel="icon" href="favicon.png" type="image/png">
 <style>
 :root{
   --bg1: url("Gefängnisinsasse.png") no-repeat center center fixed;
@@ -63,10 +63,31 @@ button#send:active{transform:translateY(1px);}
   transition: opacity 400ms ease;
   pointer-events: none;
 }
+
+/* Countdown */
+#countdown{
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(145deg, #6b4b2d, #3e2c1a);
+  color: #ffd700;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 20px;
+  font-weight: bold;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.5), inset 0 -2px 5px rgba(255,255,255,0.2);
+  border: 3px solid #4c3a2a;
+  z-index: 10000;
+  display: none;
+  text-shadow: 1px 1px 2px #000;
+  letter-spacing: 2px;
+}
 </style>
 </head>
 <body>
-  <!-- Chat -->
+  <audio id="bgAudio" src="schlüsselbund.mp3" loop autoplay></audio>
+
   <div id="chat" role="application" aria-label="Chatbot">
     <div id="messages" aria-live="polite"></div>
     <div id="inputArea">
@@ -76,9 +97,7 @@ button#send:active{transform:translateY(1px);}
   </div>
 
   <div id="overlay" aria-hidden="true"></div>
-
-  <!-- Hintergrund-Sound NEU -->
-  <audio id="prisonSound" src="schluesselbund.mp3" loop></audio>
+  <div id="countdown">05:00</div>
 
 <script>
 const botAvatar="bot.png";
@@ -90,11 +109,12 @@ const messages=document.getElementById('messages');
 const input=document.getElementById('userInput');
 const sendBtn=document.getElementById('send');
 const overlay=document.getElementById('overlay');
-const prisonSound=document.getElementById('prisonSound'); // NEU
-
+const countdownElem=document.getElementById('countdown');
 let lockWindow = null;
+let countdownStarted = false;
+let countdownTime = 300;
+let countdownInterval;
 
-/* Nachricht einfügen */
 function addMessage(text,sender='bot'){
   const msgWrap=document.createElement('div');
   msgWrap.className='message '+sender;
@@ -110,7 +130,6 @@ function addMessage(text,sender='bot'){
   messages.scrollTop=messages.scrollHeight;
 }
 
-/* Bot tippt */
 function botType(text, delay=3000){
   return new Promise(resolve=>{
     const typing=document.createElement('div');
@@ -126,7 +145,6 @@ function botType(text, delay=3000){
   });
 }
 
-/* Overlay zeigen */
 function showOverlay(img,duration=3000){
   overlay.style.background=`url("${img}") no-repeat center center fixed`;
   overlay.style.backgroundSize="cover";
@@ -138,21 +156,39 @@ function showOverlay(img,duration=3000){
   },duration);
 }
 
-/* Eingabe */
+function startCountdown(){
+  if(countdownStarted) return;
+  countdownStarted = true;
+  countdownElem.style.display = "block";
+  countdownInterval = setInterval(()=>{
+    if(countdownTime <= 0){
+      clearInterval(countdownInterval);
+      countdownElem.textContent = "00:00";
+      addMessage("Die Zeit ist abgelaufen! Du kannst das Spiel jetzt nicht mehr spielen.", "bot");
+      input.disabled = true;
+      sendBtn.disabled = true;
+      return;
+    }
+    countdownTime--;
+    let minutes = Math.floor(countdownTime / 60);
+    let seconds = countdownTime % 60;
+    countdownElem.textContent = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+  },1000);
+}
+
 function sendMessage(){
   const txt=input.value.trim();
   if(!txt) return;
+  if(!countdownStarted) startCountdown();
   addMessage(txt,'user');
   input.value='';
 
   if(txt===expectedPhrase){
-    // Popup direkt beim Klick öffnen, zählt als User-Aktion
     lockWindow = window.open(lockPage,'_blank','width=500,height=700');
 
     botType("Ich konnte einen Gefängniswärter schmieren. Er hat mir den Geheimcode über eine verschlüsselte Nachricht mitgeteilt. In der Nachricht steht geschrieben 'Die Fantas zählten die Beine eines Insekts. Sie wurden von bekannten Zwergen aus der neun Welt beobachtet - was eine Dreistigkeit.")
     .then(()=> botType("Ich verstehe kein einziges Wort. Wirst du daraus schlau? Versuche bitte das Schloss zu öffnen. Es bleibt nicht viel Zeit!"))
     .then(()=>{
-      // Poll bis das Schloss-Fenster geschlossen wird
       const poll=setInterval(()=>{
         if(lockWindow && lockWindow.closed){
           clearInterval(poll);
@@ -169,21 +205,12 @@ function sendMessage(){
   }
 }
 
-/* Events */
 sendBtn.addEventListener('click',sendMessage);
 input.addEventListener('keydown',e=>{if(e.key==='Enter')sendMessage();});
 
-/* Startnachricht */
 window.addEventListener('load',()=>{
   botType("Hallo Melanie! Endlich kommst du mich Mal wieder besuchen. Ich brauche dringend deine Unterstützung mein Engel. Wenn du mich unterstützen möchtest, schreibe 'Natürlich, mein Schatz'");
-
-  // Sound starten (Autoplay muss meist über User-Interaktion freigegeben werden)
-  document.body.addEventListener('click', ()=> {
-    prisonSound.volume=0.5; // Lautstärke anpassen
-    prisonSound.play();
-  }, { once:true }); // nur beim ersten Klick
 });
 </script>
 </body>
 </html>
-
