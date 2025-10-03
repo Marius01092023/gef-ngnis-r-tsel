@@ -8,7 +8,6 @@
 <style>
 :root{
   --bg1: url("Gefängnisinsasse.png") no-repeat center center fixed;
-  --bg1-mobile: url("Gefängnisinsasse_mobil.png") no-repeat center center fixed;
   --bot-bubble: #f1f0f0;
   --user-bubble: #4e9af1;
 }
@@ -27,13 +26,26 @@ html,body{
   box-sizing:border-box;
 }
 
-/* Mobile Hintergrund */
-@media (max-width: 600px){
-  html,body{
-    background: var(--bg1-mobile);
-    background-size: cover;
-    background-position: center center;
-  }
+#startScreen{
+  position: fixed;
+  top:0;left:0;width:100%;height:100%;
+  background: rgba(0,0,0,0.85);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  color:#fff;
+  z-index:20000;
+}
+#startScreen button{
+  margin-top:20px;
+  padding:14px 28px;
+  font-size:18px;
+  border:none;
+  border-radius:12px;
+  background:#4e9af1;
+  color:#fff;
+  cursor:pointer;
 }
 
 #chat{
@@ -44,12 +56,11 @@ html,body{
   backdrop-filter: blur(6px);
   border-radius:18px;
   box-shadow: 0 16px 40px rgba(0,0,0,0.25);
-  display:flex;
+  display:none; /* erst sichtbar nach Start */
   flex-direction:column;
   overflow:hidden;
   position:relative;
   z-index:1;
-  display: none; /* erst sichtbar nach Spielstart */
 }
 
 #messages{flex:1;padding:15px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
@@ -65,7 +76,6 @@ html,body{
 button#send{margin-left:8px;padding:10px 16px;border-radius:20px;border:none;background:#4e9af1;color:#fff;cursor:pointer;font-weight:600;}
 button#send:active{transform:translateY(1px);}
 
-/* Overlay */
 #overlay{
   position: fixed;
   top:0;
@@ -101,41 +111,27 @@ button#send:active{transform:translateY(1px);}
   letter-spacing: 2px;
 }
 
-/* Startscreen */
-#startScreen{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  gap:20px;
-}
-#startScreen button{
-  padding:12px 24px;
-  font-size:18px;
-  border:none;
-  border-radius:12px;
-  background:#4e9af1;
-  color:#fff;
-  font-weight:bold;
-  cursor:pointer;
-  box-shadow:0 6px 12px rgba(0,0,0,0.3);
+@media (max-width: 768px) {
+  html,body{
+    background: url("Gefängnisinsasse_mobil.png") no-repeat center center fixed;
+    background-size: cover;
+  }
 }
 </style>
 </head>
 <body>
 
 <div id="startScreen">
-  <h2>Gefängnisrätsel</h2>
-  <p>Bist du bereit? Klicke auf den Button, um das Spiel zu starten.</p>
+  <h1>Escape Game</h1>
+  <p>Drücke Start, um das Spiel zu beginnen.</p>
   <button id="startBtn">Spiel starten</button>
 </div>
 
 <div id="chat" role="application" aria-label="Chatbot">
   <div id="messages" aria-live="polite"></div>
   <div id="inputArea">
-    <input id="userInput" type="text" placeholder="Schreib etwas..." aria-label="Nachricht eingeben" />
-    <button id="send">Senden</button>
+    <input id="userInput" type="text" placeholder="Schreib etwas..." aria-label="Nachricht eingeben" disabled />
+    <button id="send" disabled>Senden</button>
   </div>
 </div>
 
@@ -153,9 +149,9 @@ const input=document.getElementById('userInput');
 const sendBtn=document.getElementById('send');
 const overlay=document.getElementById('overlay');
 const countdownElem=document.getElementById('countdown');
+const startBtn=document.getElementById('startBtn');
 const startScreen=document.getElementById('startScreen');
 const chat=document.getElementById('chat');
-const startBtn=document.getElementById('startBtn');
 
 let lockWindow = null;
 let countdownStarted = false;
@@ -164,6 +160,7 @@ let bgAudio;
 let countdownTime = 300;
 let countdownInterval;
 
+/* Nachricht einfügen */
 function addMessage(text,sender='bot'){
   const msgWrap=document.createElement('div');
   msgWrap.className='message '+sender;
@@ -179,6 +176,7 @@ function addMessage(text,sender='bot'){
   messages.scrollTop=messages.scrollHeight;
 }
 
+/* Bot tippt */
 function botType(text, delay=3000){
   return new Promise(resolve=>{
     const typing=document.createElement('div');
@@ -194,8 +192,16 @@ function botType(text, delay=3000){
   });
 }
 
+/* Overlay */
 function showOverlay(img,duration=3000){
-  overlay.style.background=`url("${img}") no-repeat center center`;
+  let overlayImg = img;
+
+  // Mobil-Version nutzen
+  if(window.innerWidth <= 768){
+    if(img === "Gefängnisinsasse_mit_Gesicht.png") overlayImg = "Gefängnisinsasse_mit_Gesicht_mobil.png";
+  }
+
+  overlay.style.background=`url("${overlayImg}") no-repeat center center`;
   overlay.style.backgroundSize="cover";
   overlay.style.display='block';
   overlay.style.opacity='1';
@@ -205,6 +211,7 @@ function showOverlay(img,duration=3000){
   },duration);
 }
 
+/* Countdown */
 function startCountdown(){
   if(countdownStarted) return;
   countdownStarted = true;
@@ -226,9 +233,11 @@ function startCountdown(){
   },1000);
 }
 
+/* Nachricht senden */
 function sendMessage(){
   const txt=input.value.trim();
   if(!txt) return;
+
   addMessage(txt,'user');
   input.value='';
 
@@ -246,32 +255,37 @@ function sendMessage(){
       },500);
     });
   } else {
-    // Unterschiedliche Overlays für mobile/desktop
-    const isMobile = window.matchMedia("(max-width: 600px)").matches;
-    const overlayImg = isMobile ? "Gefängnisinsasse_mit_Gesicht_mobil.png" : "Gefängnisinsasse_mit_Gesicht.png";
-    showOverlay(overlayImg,3000);
+    showOverlay("Gefängnisinsasse_mit_Gesicht.png",3000);
     setTimeout(()=> {
       botType(`Du möchtest mir nicht helfen? Überleg dir das gut. Ich habe noch viele Kontakte außerhalb dieser Mauern, die dir das Leben schwer machen werden. Antworte mir mit "Natürlich, mein Schatz" und ich vergesse dein Zögern.`);
     },3200);
   }
 }
 
-/* Startbutton Event */
+/* Startbutton */
 startBtn.addEventListener('click',()=>{
   startScreen.style.display="none";
   chat.style.display="flex";
 
+  input.disabled = false;
+  sendBtn.disabled = false;
+  input.focus();
+
   // Audio starten
   bgAudio = new Audio('schluesselbund.mp3');
   bgAudio.loop = true;
-  bgAudio.play().catch(err => console.log("Audio konnte nicht abgespielt werden:", err));
+  bgAudio.play().catch(err => {
+    console.log("Audio blockiert, aber Spiel läuft trotzdem weiter:", err);
+  });
   audioStarted = true;
 
   // Countdown starten
   startCountdown();
 
   // Erste Bot-Nachricht
-  botType("Hallo Melanie! Endlich kommst du mich mal wieder besuchen. Ich brauche dringend deine Unterstützung, mein Engel. Wenn du mir helfen möchtest, schreibe 'Natürlich, mein Schatz'");
+  setTimeout(()=>{
+    botType("Hallo Melanie! Endlich kommst du mich mal wieder besuchen. Ich brauche dringend deine Unterstützung, mein Engel. Wenn du mir helfen möchtest, schreibe 'Natürlich, mein Schatz'");
+  }, 1000);
 });
 
 sendBtn.addEventListener('click',sendMessage);
