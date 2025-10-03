@@ -62,7 +62,7 @@ button#send:active{transform:translateY(1px);}
   height:100vh;
   display:none;
   opacity:0;
-  z-index:9999;
+  z-index:10000;
   transition: opacity 400ms ease;
   pointer-events: none;
   background-size: cover;
@@ -83,7 +83,7 @@ button#send:active{transform:translateY(1px);}
   font-weight: bold;
   box-shadow: 0 6px 12px rgba(0,0,0,0.5), inset 0 -2px 5px rgba(255,255,255,0.2);
   border: 3px solid #4c3a2a;
-  z-index: 10001;
+  z-index: 10001; /* höher als Overlay */
   display: none;
   text-shadow: 1px 1px 2px #000;
   letter-spacing: 2px;
@@ -164,6 +164,7 @@ function showOverlay(img,duration=3000){
 function startCountdown(){
   if(countdownStarted) return;
   countdownStarted = true;
+  countdownTime = 300;
   countdownElem.style.display = "block";
   countdownInterval = setInterval(()=>{
     if(countdownTime <= 0){
