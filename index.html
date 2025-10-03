@@ -83,7 +83,7 @@ button#send:active{transform:translateY(1px);}
   font-weight: bold;
   box-shadow: 0 6px 12px rgba(0,0,0,0.5), inset 0 -2px 5px rgba(255,255,255,0.2);
   border: 3px solid #4c3a2a;
-  z-index: 10001; /* höher als Overlay */
+  z-index: 10001;
   display: none;
   text-shadow: 1px 1px 2px #000;
   letter-spacing: 2px;
@@ -91,7 +91,7 @@ button#send:active{transform:translateY(1px);}
 </style>
 </head>
 <body>
-  <audio id="bgAudio" src="schlüsselbund.mp3" loop autoplay></audio>
+  <audio id="bgAudio" src="schlüsselbund.mp3" loop></audio>
 
   <div id="chat" role="application" aria-label="Chatbot">
     <div id="messages" aria-live="polite"></div>
@@ -115,8 +115,11 @@ const input=document.getElementById('userInput');
 const sendBtn=document.getElementById('send');
 const overlay=document.getElementById('overlay');
 const countdownElem=document.getElementById('countdown');
+const bgAudio = document.getElementById('bgAudio');
+
 let lockWindow = null;
 let countdownStarted = false;
+let audioStarted = false;
 let countdownTime = 300;
 let countdownInterval;
 
@@ -185,6 +188,13 @@ function startCountdown(){
 function sendMessage(){
   const txt=input.value.trim();
   if(!txt) return;
+
+  // Audio starten beim ersten User-Input
+  if(!audioStarted){
+    bgAudio.play().catch(err => console.log("Audio konnte nicht abgespielt werden:", err));
+    audioStarted = true;
+  }
+
   if(!countdownStarted) startCountdown();
   addMessage(txt,'user');
   input.value='';
