@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <title>Chatbot</title>
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
 <link rel="icon" href="favicon.png" type="image/png">
 <style>
 :root{
@@ -18,17 +18,18 @@ html,body{
   font-family: "Segoe UI", Tahoma, sans-serif;
   background: var(--bg1);
   background-size: cover;
+  background-position: center center;
   display:flex;
   align-items:center;
   justify-content:center;
-  padding:20px;
+  padding:10px;
   box-sizing:border-box;
 }
 
 #chat{
-  width:520px;
-  height:700px;
-  max-width:98vw;
+  width:90vw;
+  max-width:520px;
+  height:80vh;
   background: rgba(255,255,255,0.15);
   backdrop-filter: blur(6px);
   border-radius:18px;
@@ -40,20 +41,19 @@ html,body{
   z-index:1;
 }
 
-#messages{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+#messages{flex:1;padding:15px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
 .message{display:flex;align-items:flex-end;max-width:75%;}
 .message.user{align-self:flex-end;flex-direction:row-reverse;}
 .message.bot{align-self:flex-start;}
-.message img{width:44px;height:44px;border-radius:50%;margin:0 10px;flex-shrink:0;object-fit:cover;}
-.bubble{padding:12px 16px;border-radius:16px;font-size:15px;line-height:1.4;box-shadow:0 2px 6px rgba(0,0,0,0.08);word-wrap:break-word;}
+.message img{width:36px; height:36px; border-radius:50%; margin:0 8px; flex-shrink:0; object-fit:cover;}
+.bubble{padding:10px 14px; border-radius:16px; font-size:14px; line-height:1.4; box-shadow:0 2px 6px rgba(0,0,0,0.08); word-wrap:break-word;}
 .bot .bubble{background:var(--bot-bubble);color:#111;border-bottom-left-radius:6px;}
 .user .bubble{background:var(--user-bubble);color:#fff;border-bottom-right-radius:6px;}
-#inputArea{display:flex;padding:14px;background:rgba(250,250,250,0.7);border-top:1px solid #eee;}
-#userInput{flex:1;padding:12px;border-radius:24px;border:1px solid #ccc;font-size:15px;outline:none;}
-button#send{margin-left:12px;padding:12px 18px;border-radius:20px;border:none;background:#4e9af1;color:#fff;cursor:pointer;font-weight:600;}
+#inputArea{display:flex;padding:10px;background:rgba(250,250,250,0.7);border-top:1px solid #eee;}
+#userInput{flex:1;padding:10px;border-radius:24px;border:1px solid #ccc;font-size:14px;outline:none;}
+button#send{margin-left:8px;padding:10px 16px;border-radius:20px;border:none;background:#4e9af1;color:#fff;cursor:pointer;font-weight:600;}
 button#send:active{transform:translateY(1px);}
 
-/* Overlay */
 #overlay{
   position: fixed;
   top:0;
@@ -72,14 +72,14 @@ button#send:active{transform:translateY(1px);}
 /* Countdown */
 #countdown{
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 15px;
+  right: 15px;
   background: linear-gradient(145deg, #6b4b2d, #3e2c1a);
   color: #ffd700;
-  padding: 12px 24px;
-  border-radius: 12px;
+  padding: 8px 16px;
+  border-radius: 10px;
   font-family: 'Courier New', monospace;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: bold;
   box-shadow: 0 6px 12px rgba(0,0,0,0.5), inset 0 -2px 5px rgba(255,255,255,0.2);
   border: 3px solid #4c3a2a;
@@ -88,20 +88,29 @@ button#send:active{transform:translateY(1px);}
   text-shadow: 1px 1px 2px #000;
   letter-spacing: 2px;
 }
+
+@media (max-width: 400px) {
+  #chat{height:75vh;}
+  #messages{padding:10px; gap:8px;}
+  .bubble{font-size:13px; padding:8px 12px;}
+  #userInput{font-size:13px; padding:8px;}
+  button#send{padding:8px 12px;}
+  #countdown{font-size:14px; padding:6px 12px;}
+}
 </style>
 </head>
 <body>
 
-  <div id="chat" role="application" aria-label="Chatbot">
-    <div id="messages" aria-live="polite"></div>
-    <div id="inputArea">
-      <input id="userInput" type="text" placeholder="Schreib etwas..." aria-label="Nachricht eingeben" />
-      <button id="send">Senden</button>
-    </div>
+<div id="chat" role="application" aria-label="Chatbot">
+  <div id="messages" aria-live="polite"></div>
+  <div id="inputArea">
+    <input id="userInput" type="text" placeholder="Schreib etwas..." aria-label="Nachricht eingeben" />
+    <button id="send">Senden</button>
   </div>
+</div>
 
-  <div id="overlay" aria-hidden="true"></div>
-  <div id="countdown">05:00</div>
+<div id="overlay" aria-hidden="true"></div>
+<div id="countdown">05:00</div>
 
 <script>
 const botAvatar="Bot.png";
@@ -202,7 +211,6 @@ function sendMessage(){
 
   if(txt===expectedPhrase){
     lockWindow = window.open(lockPage,'_blank','width=500,height=700');
-
     botType("Ich konnte einen Gefängniswärter schmieren. Er hat mir den Geheimcode über eine verschlüsselte Nachricht mitgeteilt. In der Nachricht steht geschrieben 'Die Fantas zählten die Beine eines Insekts. Sie wurden von bekannten Zwergen aus der neun Welt beobachtet - was eine Dreistigkeit.")
     .then(()=> botType("Ich verstehe kein einziges Wort. Wirst du daraus schlau? Versuche bitte das Schloss zu öffnen. Es bleibt nicht viel Zeit!"))
     .then(()=>{
